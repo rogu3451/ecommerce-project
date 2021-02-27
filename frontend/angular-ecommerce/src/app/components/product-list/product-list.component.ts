@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import {ProductService} from "../../services/product.service";
-import {Product} from "../../common/product";
-import {ActivatedRoute} from "@angular/router";
+import {ProductService} from '../../services/product.service';
+import {Product} from '../../common/product';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'app-product-list',
@@ -12,6 +12,7 @@ export class ProductListComponent implements OnInit {
 
   products: Product[];
   currentCategoryId: number;
+  searchMode: boolean;
 
   constructor(private productService: ProductService,
               private route: ActivatedRoute) { }
@@ -23,7 +24,22 @@ export class ProductListComponent implements OnInit {
     this.listProducts();
   }
 
+  // tslint:disable-next-line:typedef
   listProducts(){
+
+    this.searchMode = this.route.snapshot.paramMap.has('keyword');
+
+    if(this.searchMode){
+      this.handleSearchProducts();
+    }
+    else{
+      this.handleListProducts();
+    }
+
+
+  }
+
+  handleListProducts(){
 
     // check if "id" parameter is available
     const hasCategoryId: boolean = this.route.snapshot.paramMap.has('id');
@@ -39,8 +55,21 @@ export class ProductListComponent implements OnInit {
     // now get the products for the given category id
     this.productService.getProductList(this.currentCategoryId).subscribe(
       data => {
-          this.products = data;
+        this.products = data;
       }
-    )
+    );
   }
+
+  private handleSearchProducts() {
+
+    const theKeyword: string = this.route.snapshot.paramMap.get('keyword');
+
+    // now search for the product using keyword
+    this.productService.searchProducts(theKeyword).subscribe(
+      data => {
+        this.products = data;
+      }
+    );
+  }
+
 }
